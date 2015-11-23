@@ -1,8 +1,8 @@
 {
-  "name": "good-console",
+  "name": "good-console-logfmt",
   "version": "5.2.0",
-  "repository": "git://github.com/hapijs/good-console",
-  "description": "Console broadcasting for Good process monitor",
+  "repository": "git://github.com/cadecairos/good-console-logfmt",
+  "description": "Console broadcasting for Good process monitor, using the logfmt format",
   "main": "lib/index.js",
   "scripts": {
     "test": "lab -t 100 -vLa code",
@@ -12,6 +12,7 @@
     "good-squeeze": "2.x.x",
     "hoek": "2.x.x",
     "json-stringify-safe": "5.0.x",
+    "logfmt": "^1.2.0",
     "moment": "2.8.x",
     "through2": "0.6.x"
   },
