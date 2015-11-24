@@ -166,7 +166,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 var reporter = GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
 
                 StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -196,7 +196,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 var reporter = new GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
                 var event = Hoek.clone(internals.response);
 
                 delete event.query;
@@ -228,7 +228,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 var reporter = new GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
                 var event = Hoek.clone(internals.response);
 
                 delete event.responsePayload;
@@ -260,7 +260,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 var reporter = new GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
                 var event = Hoek.clone(internals.response);
 
                 StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
@@ -291,7 +291,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 var reporter = new GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
                 var event = Hoek.clone(internals.response);
 
                 StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
@@ -324,7 +324,7 @@ describe('GoodConsoleLogfmt', function () {
                 var counter = 1;
                 var reporter = new GoodConsoleLogfmt({ response: '*' });
                 var now = Date.now();
-                var timeString = Moment(now).format(internals.defaults.format);
+                var timeString = Moment(now).toISOString();
                 var colors = {
                     1: 32,
                     2: 32,
@@ -375,7 +375,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ ops: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
             var event = Hoek.clone(internals.ops);
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
@@ -405,7 +405,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ error: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
             var event = {
                 event: 'error',
                 error: {
@@ -441,7 +441,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ request: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -470,7 +470,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ request: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -500,7 +500,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = GoodConsoleLogfmt({ wreck: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -530,7 +530,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = GoodConsoleLogfmt({ wreck: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -560,7 +560,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ test: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
             var event = {
                 event: 'test',
                 data: {
@@ -595,7 +595,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ test: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
             var event = {
                 event: 'test',
                 data: 'for testing',
@@ -628,7 +628,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ test: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
             var event = {
                 event: 'test',
                 tags: 'user',
@@ -658,15 +658,15 @@ describe('GoodConsoleLogfmt', function () {
 
         it('prints log events with string data', function (done) {
 
-            var reporter = new GoodConsoleLogfmt({ log: '*' }, { format: 'DD-YY -- ZZ', utc: false });
+            var reporter = new GoodConsoleLogfmt({ log: '*' }, { utc: false });
             var now = Date.now();
-            var timeString = Moment(now).format('DD-YY -- ZZ');
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
                 if (string.includes(timeString)) {
                     stand.restore();
-                    expect(string).to.equal(`data="this is a log" tags=log,info timestring="${timeString}"\n`);
+                    expect(string).to.equal(`data="this is a log" tags=log,info timestring=${timeString}\n`);
                 }
                 else {
                     stand.original(string, enc, callback);
@@ -692,7 +692,7 @@ describe('GoodConsoleLogfmt', function () {
 
             var reporter = new GoodConsoleLogfmt({ log: '*' });
             var now = Date.now();
-            var timeString = Moment(now).format(internals.defaults.format);
+            var timeString = Moment(now).toISOString();
 
             StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
 
@@ -724,11 +724,11 @@ describe('GoodConsoleLogfmt', function () {
             });
         });
 
-        it('formats the timestamp based on the supplied option', function (done) {
+        it('formats the timestamp based on the supplied option non-utc mode', function (done) {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' }, { format: 'YYYY' });
+            var reporter = new GoodConsoleLogfmt({ test: '*' }, { utc: false });
             var now = Date.now();
-            var timeString = Moment(now).format('YYYY');
+            var timeString = Moment(now).toISOString();
             var event = {
                 event: 'test',
                 data: {
@@ -743,76 +743,6 @@ describe('GoodConsoleLogfmt', function () {
                 if (string.includes(timeString)) {
                     stand.restore();
                     expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
-            });
-        });
-
-        it('formats the timestamp based on the supplied option non-utc mode', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ test: '*' }, { format: 'YYYY - ZZ', utc: false });
-            var now = Date.now();
-            var timeString = Moment(now).format('YYYY - ZZ');
-            var event = {
-                event: 'test',
-                data: {
-                    reason: 'for testing'
-                },
-                tags: ['user'],
-                timestamp: now
-            };
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring="${timeString}"\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
-            });
-        });
-
-        it('formats the timestamp even if it\'s a string', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ test: '*' }, { format: 'YYYY - ZZ' });
-            var now = Date.now();
-            var timeString = Moment(now).format('YYYY - ZZ');
-            var event = {
-                event: 'test',
-                data: {
-                    reason: 'for testing'
-                },
-                tags: ['user'],
-                timestamp: now + ''
-            };
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring="${timeString}"\n`);
                 }
                 else {
                     stand.original(string, enc, callback);
@@ -844,8 +774,6 @@ describe('GoodConsoleLogfmt', function () {
 
                 if (string.includes('!!!')) {
                     stand.restore();
-                    // console.log(string);
-                    // `data="{\\"reason\\":\\"for testing\\"}" tags=test,user,!!! timestring=${timeString}\n`
                     expect(/data="{\\"reason\\":\\"for testing\\"}" tags=test,user,!!! timestring=/.test(string)).to.be.true();
                 }
                 else {
