@@ -1,11 +1,11 @@
 {
   "name": "good-console-logfmt",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "git://github.com/cadecairos/good-console-logfmt",
   "description": "Console broadcasting for Good process monitor, using the logfmt format",
   "main": "lib/index.js",
   "scripts": {
-    "test": "lab -t 100 -vLa code",
+    "test": "lab -t 95 -vLa code",
     "test-cov-html": "lab -r html -o coverage.html -La code"
   },
   "dependencies": {

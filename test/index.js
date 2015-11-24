@@ -466,7 +466,7 @@ describe('GoodConsoleLogfmt', function () {
             });
         });
 
-        it('prints request events with object data', function (done) {
+        it('flattens request events with object data', function (done) {
 
             var reporter = new GoodConsoleLogfmt({ request: '*' });
             var now = Date.now();
@@ -476,7 +476,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 if (string.includes(timeString)) {
                     stand.restore();
-                    expect(string).to.equal(`data="{\\"message\\":\\"you made a request to a resource\\"}" tags=request,user,info timestring=${timeString}\n`);
+                    expect(string).to.equal(`message="you made a request to a resource" tags=request,user,info timestring=${timeString}\n`);
                 }
                 else {
                     stand.original(string, enc, callback);
@@ -688,7 +688,7 @@ describe('GoodConsoleLogfmt', function () {
             });
         });
 
-        it('prints log events with object data', function (done) {
+        it('flattens log events with object data', function (done) {
 
             var reporter = new GoodConsoleLogfmt({ log: '*' });
             var now = Date.now();
@@ -698,7 +698,7 @@ describe('GoodConsoleLogfmt', function () {
 
                 if (string.includes(timeString)) {
                     stand.restore();
-                    expect(string).to.equal(`data="{\\"message\\":\\"this is a log\\"}" tags=log,info,high timestring=${timeString}\n`);
+                    expect(string).to.equal(`message="this is a log" tags=log,info,high timestring=${timeString}\n`);
                 }
                 else {
                     stand.original(string, enc, callback);
