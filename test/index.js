@@ -1,21 +1,23 @@
-// Load modules
-var Stream = require('stream');
+'use strict';
 
-var Code = require('code');
-var Hoek = require('hoek');
-var Lab = require('lab');
-var Moment = require('moment');
-var StandIn = require('stand-in');
-var GoodConsoleLogfmt = require('..');
+const Stream = require('stream');
+
+const Code = require('code');
+const Hoek = require('hoek');
+const Lab = require('lab');
+const Moment = require('moment');
+const StandIn = require('stand-in');
+const GoodConsoleLogfmt = require('..');
 
 
 // Declare internals
 
-var internals = {
+const internals = {
     defaults: {
         format: 'YYMMDD/HHmmss.SSS'
     }
 };
+
 internals.ops = {
     event: 'ops',
     timestamp: 1411583264547,
@@ -36,6 +38,7 @@ internals.ops = {
     load: { requests: {}, concurrents: {}, responseTimes: {} },
     pid: 64291
 };
+
 internals.response = {
     event: 'response',
     method: 'post',
@@ -52,6 +55,7 @@ internals.response = {
         value: 1
     }
 };
+
 internals.request = {
     event: 'request',
     timestamp: 1411583264547,
@@ -62,6 +66,7 @@ internals.request = {
     method: 'get',
     path: '/'
 };
+
 internals.wreck = {
     event: 'wreck',
     timestamp: 1446738313624,
@@ -79,6 +84,7 @@ internals.wreck = {
         statusMessage: 'OK'
     }
 };
+
 internals.wreckError = {
     event: 'wreck',
     timestamp: 1446740440479,
@@ -106,9 +112,9 @@ internals.wreckError = {
 };
 
 
-internals.readStream = function (done) {
+internals.readStream = (done) => {
 
-    var result = new Stream.Readable({ objectMode: true });
+    const result = new Stream.Readable({ objectMode: true });
     result._read = Hoek.ignore;
 
     if (typeof done === 'function') {
@@ -120,212 +126,225 @@ internals.readStream = function (done) {
 
 // Test shortcuts
 
-var lab = exports.lab = Lab.script();
-var expect = Code.expect;
-var describe = lab.describe;
-var it = lab.it;
+const lab = exports.lab = Lab.script();
+const expect = Code.expect;
+const describe = lab.describe;
+const it = lab.it;
 
-describe('GoodConsoleLogfmt', function () {
+describe('GoodConsoleLogfmt', () => {
 
-    it('returns a new object without "new"', function (done) {
+    it('returns a new object without "new"', () => {
 
-        var reporter = GoodConsoleLogfmt({ log: '*' });
+        const reporter = GoodConsoleLogfmt({ log: '*' });
         expect(reporter._settings).to.exist();
-
-        done();
     });
 
-    it('returns a new object with "new"', function (done) {
+    it('returns a new object with "new"', () => {
 
-        var reporter = new GoodConsoleLogfmt({ log: '*' });
+        const reporter = new GoodConsoleLogfmt({ log: '*' });
         expect(reporter._settings).to.exist();
-
-        done();
     });
 
-    it('throws an error if the incomming stream is not in objectMode', function (done) {
+    it('throws an error if the incomming stream is not in objectMode', () => {
 
-        var reporter = GoodConsoleLogfmt({ log: '*' });
+        const reporter = GoodConsoleLogfmt({ log: '*' });
         expect(reporter._settings).to.exist();
 
-        var stream = new Stream.Readable();
+        const stream = new Stream.Readable();
 
-        reporter.init(stream, null, function (err) {
+        return new Promise((resolve) => {
 
-            expect(err).to.exist();
-            expect(err.message).to.equal('stream must be in object mode');
-            done();
+            reporter.init(stream, null, (err) => {
+
+                expect(err).to.exist();
+                expect(err.message).to.equal('stream must be in object mode');
+                resolve();
+            });
         });
     });
 
-    describe('_report()', function () {
+    describe('_report()', () => {
 
-        describe('printResponse()', function () {
+        describe('printResponse()', () => {
 
-            it('logs to the console for "response" events', function (done) {
+            it('logs to the console for "response" events', () => {
 
-                var reporter = GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
+                return new Promise((resolve) => {
 
-                StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+                    const reporter = GoodConsoleLogfmt({ response: '*' });
+                    const now = Date.now();
+                    const timeString = Moment(now).toISOString();
+                    StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-                    if (string.includes(timeString)) {
-                        stand.restore();
-                        expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=\u001b[32m200\u001b[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
-                    }
-                    else {
-                        stand.original(string, enc, callback);
-                    }
-                });
+                        if (string.includes(timeString)) {
+                            stand.restore();
+                            expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=\u001b[32m200\u001b[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
 
-                internals.response.timestamp = now;
+                    internals.response.timestamp = now;
 
-                var s = internals.readStream(done);
+                    const s = internals.readStream(() => resolve());
 
-                reporter.init(s, null, function (err) {
+                    reporter.init(s, null, (err) => {
 
-                    expect(err).to.not.exist();
+                        expect(err).to.not.exist();
 
-                    s.push(internals.response);
-                    s.push(null);
+                        s.push(internals.response);
+                        s.push(null);
+                    });
                 });
             });
 
-            it('logs to the console for "response" events without a query', function (done) {
+            it('logs to the console for "response" events without a query', () => {
 
-                var reporter = new GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
-                var event = Hoek.clone(internals.response);
+                const reporter = new GoodConsoleLogfmt({ response: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const event = Hoek.clone(internals.response);
 
                 delete event.query;
 
-                StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+                return new Promise((resolve) => {
 
-                    if (string.includes(timeString)) {
-                        stand.restore();
-                        expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query="" statusCode=[32m200[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
-                    }
-                    else {
-                        stand.original(string, enc, callback);
-                    }
-                });
+                    StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-                event.timestamp = now;
+                        if (string.includes(timeString)) {
+                            stand.restore();
+                            expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query="" statusCode=[32m200[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
 
-                var s = internals.readStream(done);
+                    event.timestamp = now;
 
-                reporter.init(s, null, function (err) {
+                    const s = internals.readStream(() => resolve());
 
-                    expect(err).to.not.exist();
-                    s.push(event);
-                    s.push(null);
+                    reporter.init(s, null, (err) => {
+
+                        expect(err).to.not.exist();
+                        s.push(event);
+                        s.push(null);
+                    });
                 });
             });
 
-            it('logs to the console for "response" events without a responsePayload', function (done) {
+            it('logs to the console for "response" events without a responsePayload', () => {
 
-                var reporter = new GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
-                var event = Hoek.clone(internals.response);
+                const reporter = new GoodConsoleLogfmt({ response: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const event = Hoek.clone(internals.response);
 
                 delete event.responsePayload;
 
-                StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+                return new Promise((resolve) => {
 
-                    if (string.includes(timeString)) {
-                        stand.restore();
-                        expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=[32m200[0m responseTime=150ms responsePayload="" tags=response timestring=${timeString}\n`);
-                    }
-                    else {
-                        stand.original(string, enc, callback);
-                    }
-                });
+                    StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-                event.timestamp = now;
+                        if (string.includes(timeString)) {
+                            stand.restore();
+                            expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=[32m200[0m responseTime=150ms responsePayload="" tags=response timestring=${timeString}\n`);
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
 
-                var s = internals.readStream(done);
+                    event.timestamp = now;
 
-                reporter.init(s, null, function (err) {
+                    const s = internals.readStream(() => resolve());
 
-                    expect(err).to.not.exist();
-                    s.push(event);
-                    s.push(null);
-                });
-            });
+                    reporter.init(s, null, (err) => {
 
-            it('provides a default color for response methods', function (done) {
-
-                var reporter = new GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
-                var event = Hoek.clone(internals.response);
-
-                StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                    if (string.includes(timeString)) {
-                        stand.restore();
-                        expect(string).to.equal(`instance=localhost method=[1;34mhead[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=[32m200[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
-                    }
-                    else {
-                        stand.original(string, enc, callback);
-                    }
-                });
-
-                event.timestamp = now;
-                event.method = 'head';
-
-                var s = internals.readStream(done);
-
-                reporter.init(s, null, function (err) {
-
-                    expect(err).to.not.exist();
-                    s.push(event);
-                    s.push(null);
+                        expect(err).to.not.exist();
+                        s.push(event);
+                        s.push(null);
+                    });
                 });
             });
 
-            it('does not log a status code if there is not one attached', function (done) {
+            it('provides a default color for response methods', () => {
 
-                var reporter = new GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
-                var event = Hoek.clone(internals.response);
+                const reporter = new GoodConsoleLogfmt({ response: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const event = Hoek.clone(internals.response);
 
-                StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+                return new Promise((resolve) => {
 
-                    if (string.includes(timeString)) {
-                        stand.restore();
-                        expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode="" responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
-                    }
-                    else {
-                        stand.original(string, enc, callback);
-                    }
+                    StandIn.replace(process.stdout, 'write', (stand, string, enc, callback)  => {
+
+                        if (string.includes(timeString)) {
+                            stand.restore();
+                            expect(string).to.equal(`instance=localhost method=[1;34mhead[0m path=/data query={\\"name\\":\\"adam\\"} statusCode=[32m200[0m responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
+
+                    event.timestamp = now;
+                    event.method = 'head';
+
+                    const s = internals.readStream(() => resolve());
+
+                    reporter.init(s, null, (err) => {
+
+                        expect(err).to.not.exist();
+                        s.push(event);
+                        s.push(null);
+                    });
                 });
+            });
 
-                event.timestamp = now;
-                delete event.statusCode;
+            it('does not log a status code if there is not one attached', () => {
 
-                var s = internals.readStream(done);
+                const reporter = new GoodConsoleLogfmt({ response: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const event = Hoek.clone(internals.response);
 
-                reporter.init(s, null, function (err) {
+                return new Promise((resolve) => {
 
-                    expect(err).to.not.exist();
-                    s.push(event);
-                    s.push(null);
+                    StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                        if (string.includes(timeString)) {
+                            stand.restore();
+                            expect(string).to.equal(`instance=localhost method=[1;33mpost[0m path=/data query={\\"name\\":\\"adam\\"} statusCode="" responseTime=150ms responsePayload="response payload: {\\"foo\\":\\"bar\\",\\"value\\":1}" tags=response timestring=${timeString}\n`);
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
+
+                    event.timestamp = now;
+                    delete event.statusCode;
+
+                    const s = internals.readStream(() => resolve());
+
+                    reporter.init(s, null, (err) => {
+
+                        expect(err).to.not.exist();
+                        s.push(event);
+                        s.push(null);
+                    });
                 });
 
             });
 
-            it('uses different colors for different status codes', function (done) {
+            it('uses different colors for different status codes', () => {
 
-                var counter = 1;
-                var reporter = new GoodConsoleLogfmt({ response: '*' });
-                var now = Date.now();
-                var timeString = Moment(now).toISOString();
-                var colors = {
+                let counter = 1;
+                const reporter = new GoodConsoleLogfmt({ response: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const colors = {
                     1: 32,
                     2: 32,
                     3: 36,
@@ -333,80 +352,89 @@ describe('GoodConsoleLogfmt', function () {
                     5: 31
                 };
 
-                var write = StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+                return new Promise((resolve) => {
+
+                    const write = StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                        if (string.includes(timeString)) {
+                            const expected = `instance=localhost method=[1;33mpost[0m path=/data query="" statusCode=[${colors[counter]}m${counter * 100}[0m responseTime=150ms responsePayload="" tags=response timestring=${timeString}\n`;
+                            expect(string).to.equal(expected);
+
+                            counter++;
+                        }
+                        else {
+                            stand.original(string, enc, callback);
+                        }
+                    });
+
+                    const s = internals.readStream(() => {
+
+                        write.restore();
+                        resolve();
+                    });
+
+                    reporter.init(s, null, (err) => {
+
+                        expect(err).to.not.exist();
+
+                        for (let i = 1; i < 6; ++i) {
+                            const event = Hoek.clone(internals.response);
+                            event.statusCode = i * 100;
+                            event.timestamp = now;
+
+                            delete event.query;
+                            delete event.responsePayload;
+
+                            s.push(event);
+                        }
+                        s.push(null);
+                    });
+                });
+            });
+        });
+
+        it('prints ops events', () => {
+
+            return new Promise((resolve) => {
+
+                const reporter = new GoodConsoleLogfmt({ ops: '*' });
+                const now = Date.now();
+                const timeString = Moment(now).toISOString();
+                const event = Hoek.clone(internals.ops);
+
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
                     if (string.includes(timeString)) {
-                        var expected = `instance=localhost method=[1;33mpost[0m path=/data query="" statusCode=[${colors[counter]}m${counter * 100}[0m responseTime=150ms responsePayload="" tags=response timestring=${timeString}\n`;
-                        expect(string).to.equal(expected);
-
-                        counter++;
+                        stand.restore();
+                        expect(string).to.equal(`memory=29Mb uptime (seconds)=6 load=1.650390625,1.6162109375,1.65234375 tags=ops timestring=${timeString}\n`);
                     }
                     else {
                         stand.original(string, enc, callback);
                     }
                 });
 
-                var s = internals.readStream(function () {
+                event.timestamp = now;
 
-                    write.restore();
-                    done();
+                const s = internals.readStream(() => {
+
+                    resolve();
                 });
 
-                reporter.init(s, null, function (err) {
+                reporter.init(s, null, (err) => {
 
                     expect(err).to.not.exist();
-
-                    for (var i = 1; i < 6; ++i) {
-                        var event = Hoek.clone(internals.response);
-                        event.statusCode = i * 100;
-                        event.timestamp = now;
-
-                        delete event.query;
-                        delete event.responsePayload;
-
-                        s.push(event);
-                    }
+                    s.push(event);
                     s.push(null);
                 });
             });
         });
 
-        it('prints ops events', function (done) {
+        it('prints error events', () => {
 
-            var reporter = new GoodConsoleLogfmt({ ops: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = Hoek.clone(internals.ops);
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`memory=29Mb uptime (seconds)=6 load=1.650390625,1.6162109375,1.65234375 tags=ops timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            event.timestamp = now;
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
-            });
-        });
-
-        it('prints error events', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ error: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = {
+            const reporter = new GoodConsoleLogfmt({ error: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+            const event = {
                 event: 'error',
                 error: {
                     message: 'test message',
@@ -414,154 +442,169 @@ describe('GoodConsoleLogfmt', function () {
                 }
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`message="test message" stack="fake stack for testing" tags=error timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            event.timestamp = now;
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`message="test message" stack="fake stack for testing" tags=error timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            var s = internals.readStream(done);
+                event.timestamp = now;
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
-            });
-        });
+                reporter.init(s, null, (err) => {
 
-        it('prints request events with string data', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ request: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="you made a request" tags=request,user,info timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            internals.request.timestamp = now;
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push(internals.request);
-                s.push(null);
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
 
-        it('flattens request events with object data', function (done) {
+        it('prints request events with string data', () => {
 
-            var reporter = new GoodConsoleLogfmt({ request: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
+            const reporter = new GoodConsoleLogfmt({ request: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`message="you made a request to a resource" tags=request,user,info timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            internals.request.timestamp = now;
-            internals.request.data = { message: 'you made a request to a resource' };
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data="you made a request" tags=request,user,info timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            var s = internals.readStream(done);
+                internals.request.timestamp = now;
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(internals.request);
-                s.push(null);
-            });
-        });
+                reporter.init(s, null, (err) => {
 
-        it('logs to the console for "wreck" events', function (done) {
-
-            var reporter = GoodConsoleLogfmt({ wreck: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`method=\u001b[1;32mget\u001b[0m requestUrl=http://localhost/test statusCode=\u001b[32m200\u001b[0m statusMessage=OK timeSpent=29ms tags=wreck timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            internals.wreck.timestamp = now;
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-
-                s.push(internals.wreck);
-                s.push(null);
+                    expect(err).to.not.exist();
+                    s.push(internals.request);
+                    s.push(null);
+                });
             });
         });
 
-        it('logs to the console for "wreck" events that contain errors', function (done) {
+        it('flattens request events with object data', () => {
 
-            var reporter = GoodConsoleLogfmt({ wreck: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
+            const reporter = new GoodConsoleLogfmt({ request: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`method=\u001b[1;32mget\u001b[0m requestUrl=http://localhost/test timeSpent=7ms message="test error" stack="test stack" tags=wreck timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            internals.wreckError.timestamp = now;
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`message="you made a request to a resource" tags=request,user,info timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            var s = internals.readStream(done);
+                internals.request.timestamp = now;
+                internals.request.data = { message: 'you made a request to a resource' };
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
+                reporter.init(s, null, (err) => {
 
-                s.push(internals.wreckError);
-                s.push(null);
+                    expect(err).to.not.exist();
+                    s.push(internals.request);
+                    s.push(null);
+                });
             });
         });
 
-        it('prints a generic message for unknown event types with "data" as an object', function (done) {
+        it('logs to the console for "wreck" events', () => {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = {
+            const reporter = GoodConsoleLogfmt({ wreck: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+
+            return new Promise((resolve) => {
+
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`method=\u001b[1;32mget\u001b[0m requestUrl=http://localhost/test statusCode=\u001b[32m200\u001b[0m statusMessage=OK timeSpent=29ms tags=wreck timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
+
+                internals.wreck.timestamp = now;
+
+                const s = internals.readStream(() => resolve());
+
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+
+                    s.push(internals.wreck);
+                    s.push(null);
+                });
+            });
+        });
+
+        it('logs to the console for "wreck" events that contain errors', () => {
+
+            const reporter = GoodConsoleLogfmt({ wreck: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+
+            return new Promise((resolve) => {
+
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`method=\u001b[1;32mget\u001b[0m requestUrl=http://localhost/test timeSpent=7ms message="test error" stack="test stack" tags=wreck timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
+
+                internals.wreckError.timestamp = now;
+
+                const s = internals.readStream(() => resolve());
+
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+
+                    s.push(internals.wreckError);
+                    s.push(null);
+                });
+            });
+        });
+
+        it('prints a generic message for unknown event types with "data" as an object', () => {
+
+            const reporter = new GoodConsoleLogfmt({ test: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+            const event = {
                 event: 'test',
                 data: {
                     reason: 'for testing'
@@ -570,166 +613,181 @@ describe('GoodConsoleLogfmt', function () {
                 timestamp: now
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            var s = internals.readStream(done);
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
 
-        it('prints a generic message for unknown event types with "data" as a string', function (done) {
+        it('prints a generic message for unknown event types with "data" as a string', () => {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = {
+            const reporter = new GoodConsoleLogfmt({ test: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+            const event = {
                 event: 'test',
                 data: 'for testing',
                 tags: ['user'],
                 timestamp: now
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="for testing" tags=test,user timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            var s = internals.readStream(done);
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data="for testing" tags=test,user timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
 
-        it('prints a generic message for unknown event types with no "data" attribute', function (done) {
+        it('prints a generic message for unknown event types with no "data" attribute', () => {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = {
+            const reporter = new GoodConsoleLogfmt({ test: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+            const event = {
                 event: 'test',
                 tags: 'user',
                 timestamp: now
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data=(none) tags=test,user timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
-            });
-        });
-
-        it('prints log events with string data', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ log: '*' }, { utc: false });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="this is a log" tags=log,info timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push({
-                    event: 'log',
-                    timestamp: now,
-                    tags: ['info'],
-                    data: 'this is a log'
-                });
-                s.push(null);
-            });
-        });
-
-        it('flattens log events with object data', function (done) {
-
-            var reporter = new GoodConsoleLogfmt({ log: '*' });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
-
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`message="this is a log" tags=log,info,high timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
-
-            internals.request.timestamp = now;
-
-            var s = internals.readStream(done);
-
-            reporter.init(s, null, function (err) {
-
-                expect(err).to.not.exist();
-                s.push({
-                    event: 'log',
-                    timestamp: now,
-                    tags: ['info', 'high'],
-                    data: {
-                        message: 'this is a log'
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data=(none) tags=test,user timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
                     }
                 });
-                s.push(null);
+
+                const s = internals.readStream(() => resolve());
+
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
 
-        it('formats the timestamp based on the supplied option non-utc mode', function (done) {
+        it('prints log events with string data', () => {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' }, { utc: false });
-            var now = Date.now();
-            var timeString = Moment(now).toISOString();
-            var event = {
+            const reporter = new GoodConsoleLogfmt({ log: '*' }, { utc: false });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+
+            return new Promise((resolve) => {
+
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data="this is a log" tags=log,info timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
+
+                const s = internals.readStream(() => resolve());
+
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push({
+                        event: 'log',
+                        timestamp: now,
+                        tags: ['info'],
+                        data: 'this is a log'
+                    });
+                    s.push(null);
+                });
+            });
+        });
+
+        it('flattens log events with object data', () => {
+
+            const reporter = new GoodConsoleLogfmt({ log: '*' });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+
+            return new Promise((resolve) => {
+
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
+
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`message="this is a log" tags=log,info,high timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
+
+                internals.request.timestamp = now;
+
+                const s = internals.readStream(() => resolve());
+
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push({
+                        event: 'log',
+                        timestamp: now,
+                        tags: ['info', 'high'],
+                        data: {
+                            message: 'this is a log'
+                        }
+                    });
+                    s.push(null);
+                });
+            });
+        });
+
+        it('formats the timestamp based on the supplied option non-utc mode', () => {
+
+            const reporter = new GoodConsoleLogfmt({ test: '*' }, { utc: false });
+            const now = Date.now();
+            const timeString = Moment(now).toISOString();
+            const event = {
                 event: 'test',
                 data: {
                     reason: 'for testing'
@@ -738,31 +796,34 @@ describe('GoodConsoleLogfmt', function () {
                 timestamp: now
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes(timeString)) {
-                    stand.restore();
-                    expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring=${timeString}\n`);
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            var s = internals.readStream(done);
+                    if (string.includes(timeString)) {
+                        stand.restore();
+                        expect(string).to.equal(`data="{\\"reason\\":\\"for testing\\"}" tags=test,user timestring=${timeString}\n`);
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
+                reporter.init(s, null, (err) => {
+
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
 
-        it('uses the current time if the event does not have a timestamp property', function (done) {
+        it('uses the current time if the event does not have a timestamp property', () => {
 
-            var reporter = new GoodConsoleLogfmt({ test: '*' });
-            var event = {
+            const reporter = new GoodConsoleLogfmt({ test: '*' });
+            const event = {
                 event: 'test',
                 data: {
                     reason: 'for testing'
@@ -770,24 +831,27 @@ describe('GoodConsoleLogfmt', function () {
                 tags: ['user', '!!!']
             };
 
-            StandIn.replace(process.stdout, 'write', function (stand, string, enc, callback) {
+            return new Promise((resolve) => {
 
-                if (string.includes('!!!')) {
-                    stand.restore();
-                    expect(/data="{\\"reason\\":\\"for testing\\"}" tags=test,user,!!! timestring=/.test(string)).to.be.true();
-                }
-                else {
-                    stand.original(string, enc, callback);
-                }
-            });
+                StandIn.replace(process.stdout, 'write', (stand, string, enc, callback) => {
 
-            var s = internals.readStream(done);
+                    if (string.includes('!!!')) {
+                        stand.restore();
+                        expect(/data="{\\"reason\\":\\"for testing\\"}" tags=test,user,!!! timestring=/.test(string)).to.be.true();
+                    }
+                    else {
+                        stand.original(string, enc, callback);
+                    }
+                });
 
-            reporter.init(s, null, function (err) {
+                const s = internals.readStream(() => resolve());
 
-                expect(err).to.not.exist();
-                s.push(event);
-                s.push(null);
+                reporter.init(s, null, (err) =>git  {
+
+                    expect(err).to.not.exist();
+                    s.push(event);
+                    s.push(null);
+                });
             });
         });
     });
