@@ -846,7 +846,7 @@ describe('GoodConsoleLogfmt', () => {
 
                 const s = internals.readStream(() => resolve());
 
-                reporter.init(s, null, (err) =>git  {
+                reporter.init(s, null, (err) => {
 
                     expect(err).to.not.exist();
                     s.push(event);
